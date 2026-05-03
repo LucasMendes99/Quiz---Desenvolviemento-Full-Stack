@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TopicStatus {
+  available
+  construction
+}
+
+enum QuestionLevel {
+  facil
+  intermediario
+  dificil
+}
+
+model Topic {
+  id        Int         @id @default(autoincrement())
+  name      String
+  slug      String      @unique
+  status    TopicStatus @default(construction)
+  questions Question[]
+  attempts  QuizAttempt[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Question {
+  id            Int          @id @default(autoincrement())
+  topicId       Int
+  topic         Topic        @relation(fields: [topicId], references: [id])
+  level         QuestionLevel
+  text          String
+  options       String[]
+  correctAnswer String
+  answers       QuizAnswer[]
+  attempts      QuizAttemptQuestion[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model QuizAttempt {
+  id             Int          @id @default(autoincrement())
+  topicId        Int
+  topic          Topic        @relation(fields: [topicId], references: [id])
+  score          Int          @default(0)
+  totalQuestions Int
+  finishedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  answers        QuizAnswer[]
+  questions      QuizAttemptQuestion[]
+}
+
+model QuizAttemptQuestion {
+  id         Int         @id @default(autoincrement())
+  attemptId  Int
+  attempt    QuizAttempt @relation(fields: [attemptId], references: [id])
+  questionId Int
+  question   Question    @relation(fields: [questionId], references: [id])
+  createdAt  DateTime    @default(now())
+
+  @@unique([attemptId, questionId])
+}
+
+model QuizAnswer {
+  id             Int         @id @default(autoincrement())
+  attemptId      Int
+  attempt        QuizAttempt @relation(fields: [attemptId], references: [id])
+  questionId     Int
+  question       Question    @relation(fields: [questionId], references: [id])
+  selectedOption String
+  isCorrect      Boolean
+  createdAt      DateTime    @default(now())
+
+  @@unique([attemptId, questionId])
+}
