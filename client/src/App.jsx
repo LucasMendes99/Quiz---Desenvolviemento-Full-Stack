@@ -31,7 +31,8 @@ const VIEWS = {
 const ACTIVE_TOPIC = 'git-e-github';
 
 async function apiRequest(url, options) {
-  const response = await fetch(url, {
+  const apiBaseUrl = import.meta.env.VITE_API_URL || '';
+  const response = await fetch(`${apiBaseUrl}${url}`, {
     headers: {
       'Content-Type': 'application/json'
     },
